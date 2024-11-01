@@ -11,12 +11,13 @@
 #include "ships.h"
 
 #define MAX_SCORE 3
+#define MAX_TRY 3
 #define RESTART_BUTTON GPIO_NUM_19
 #define DEBOUNCER_DELAY_uS 4000
 #define BOARD_SIZE 10
 
 static uint8_t score = 0;
-static uint8_t turn_num = 30;
+static uint8_t turn_num = MAX_TRY;
 static ship *ships = NULL;
 
 static int64_t last_interrupt_time = 0;
@@ -53,8 +54,9 @@ void update_board(uint8_t x_coor, uint8_t y_coor)
 
 void restart_game(void)
 {
+    char aux[11];
     score = 0;
-    turn_num = 30;
+    turn_num = MAX_TRY;
     get_board_filled(ships_on_board, ships, get_ships(&ships));
 
     for (uint8_t row = 0; row < BOARD_SIZE; row++)
@@ -62,9 +64,10 @@ void restart_game(void)
         for (uint8_t col = 0; col < BOARD_SIZE; col++)
         {
             board_empty[row][col] = '?';
+            aux[col] = ships_on_board[row][col] + '0';
         }
+        ESP_LOGI(TAG, "%s", aux);
     }
-    game_restarted = 0;
 }
 
 static void IRAM_ATTR gpio_interrupt_handler(void *args)
